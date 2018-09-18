@@ -1,0 +1,97 @@
+#include<iostream>
+using namespace std;
+struct Node
+{
+	char data;
+	Node *left;
+	Node *right;
+	Node():left(NULL),right(NULL){}
+};
+class Tree {
+	Node *root;
+	int top;
+	 Node *stk[20]; 
+public:
+	Tree():root(NULL),top(-1){}
+	Node* CreateNode(char data)
+	{
+		Node* New = new Node();
+		New->left = NULL;
+		New->data = data;
+		New->right = NULL;
+		return New;
+	}
+	void push(Node *p) {
+		if (!IsFull()) {
+			stk[++top] = p;
+		}
+		else {
+			cout << "stack overflow" << endl;
+		}
+	}
+	Node * pop() {
+		Node *temp=NULL;
+		if (!IsEmpty()) {
+		temp = stk[top--];
+
+		}
+		else {
+			cout << "stack underflow" << endl;
+		}
+		return temp;
+	}
+	bool IsFull() {
+		return top == 19;
+	}
+	bool IsEmpty() {
+		return top == -1;
+	}
+	Node* CreateTree(char *postfix)
+	{
+		char ch;
+		for (int i = 0; i < strlen(postfix); i++) {
+			ch = postfix[i];
+			if (!isOperator(ch)) {
+
+				Node* root =CreateNode(postfix[i]);
+				push(root);
+			}
+			else {
+				Node* root = CreateNode(postfix[i]);
+				
+				Node *t1, *t2;
+				t1 = pop();
+				t2 = pop();
+				
+				root->left = t2;
+				root->right = t1;
+				push(root);
+			}
+		
+	   }
+		return root;
+	}
+	bool isOperator(char ch) {
+		if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^') {
+			return true;
+		}                                                                                                                            
+		return false;
+	}
+	void Inorder(Node *node) {
+		if (node != NULL) {
+			Inorder(node->left);
+			cout << node->data;
+			Inorder(node->right);
+		}
+
+	}
+
+};
+void main()
+{
+	Tree t;
+	char Postfix[] = "abc*+d+";
+	Node *p = t.CreateTree(Postfix);
+	t.Inorder(p);
+
+}
