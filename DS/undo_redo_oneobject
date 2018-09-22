@@ -1,0 +1,187 @@
+//#include"pch.h"
+#include <iostream>
+#include<string>
+
+
+
+using namespace std;
+class Number;
+struct playerdata
+{
+
+	string _name;
+	int _salary;
+	string _team;
+};
+class Memento
+{
+public:
+	Memento(int val, playerdata &ppx)
+	{
+		_state = val;
+		pp._name = ppx._name;
+		pp._salary = ppx._salary;
+		pp._team = ppx._team;
+
+	}
+private:
+	friend class Player; // not essential, but p287 suggests this
+	int _state;
+	playerdata pp;
+};
+
+class Player
+{
+public:
+	Player(int value, playerdata &po)
+	{
+		_value = value;
+		p._name = po._name;
+		p._salary = po._salary;
+		p._team = po._team;
+	}
+	void teams()
+	{
+		_value = _value + 1;
+
+		//p._salary = 90000;
+		//p._team ="delhi";
+		cout << "player new ipl team ="<< endl;
+		cin >> p._team;
+
+	}
+
+
+	void sal()
+	{
+		//_value = _value / 3;
+		//p._salary = 30000;
+		//p._team = "kolkata";
+		_value = _value + 1;
+		cout << "enter player new salary =" << endl;
+		cin >> p._salary;
+	}
+
+	void getValue()
+	{
+
+
+		cout << _value << endl;
+		cout << "player name=" << p._name << endl;
+		cout << "player curent salary =" << p._salary << endl;
+		cout << "player current ipl team =" << p._team << endl;
+		cout << "************************************" << endl;
+
+		//return _value;
+	}
+	Memento *createMemento()
+	{
+		return new Memento(_value, p);
+	}
+	void reinstateMemento(Memento *mem)
+	{
+		_value = mem->_state;
+
+		p._name = mem->pp._name;
+		p._salary = mem->pp._salary;
+		p._team = mem->pp._team;
+	}
+private:
+	int _value;
+	playerdata p;
+	//player  name ,salary ,brand
+};
+
+class Command
+{
+public:
+	typedef void(Player:: *Action)();
+	Command(Player *receiver, Action action)
+	{
+		_receiver = receiver;
+		_action = action;
+	}
+	virtual void execute()
+	{
+		_mementoList[_numCommands] = _receiver->createMemento();
+		_commandList[_numCommands] = this;
+		if (_numCommands > _highWater)
+			_highWater = _numCommands;
+		_numCommands++;
+		(_receiver->*_action)();
+	}
+	static void undo()
+	{
+		if (_numCommands == 0)
+		{
+			cout << "*** underflow undo!! ***" << endl;
+			return;
+		}
+		_commandList[_numCommands - 1]->_receiver->reinstateMemento
+		(_mementoList[_numCommands - 1]);
+		_numCommands--;
+	}
+	void static redo()
+	{
+		if (_numCommands > _highWater)
+		{
+			cout << "*** underflow redo ***" << endl;
+			return;
+		}
+		(_commandList[_numCommands]->_receiver->*(_commandList[_numCommands]
+			->_action))();
+		_numCommands++;
+	}
+protected:
+	Player *_receiver;
+	Action _action;
+	static Command *_commandList[20];
+	static Memento *_mementoList[20];
+	static int _numCommands;
+	static int _highWater;
+};
+
+Command *Command::_commandList[];
+Memento *Command::_mementoList[];
+int Command::_numCommands = 0;
+int Command::_highWater = 0;
+
+int main()
+{
+	playerdata pp1;
+	pp1._name = "sachin";
+	pp1._salary = 45000;
+	pp1._team = "mumbai";
+
+	int i;
+	cout << "Integer: ";
+	cin >> i;
+	Player *object = new Player(i, pp1);
+	object->getValue();
+	Command *commands[3];
+	commands[1] = new Command(object, &Player::teams);
+	commands[2] = new Command(object, &Player::sal);
+
+	cout << "Exit[0], edit_team[1], edit_salary[2], Undo[3], Redo[4]: ";
+	cin >> i;
+
+	while (i)
+	{
+		if (i == 3)
+			Command::undo();
+		else if (i == 4)
+			Command::redo();
+		else
+			commands[i]->execute();
+
+		cout << "************************************" << endl;
+		object->getValue();
+
+		cout << "Exit[0], edit_team[1], edit_salary[2], Undo[3], Redo[4]: ";
+		cin >> i;
+		///*if ((i != 1) || (i != 2) || (i != 3) || (i != 4) || (i != 0)) {
+		//	cout << " wrong input " << endl;
+		//	exit(0);
+		//}*/
+	}
+}
